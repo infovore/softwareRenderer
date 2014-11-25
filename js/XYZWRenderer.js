@@ -97,6 +97,7 @@ XYZWRenderer.prototype = {
       context.lineTo(viewV2.x, viewV2.y);
       context.lineTo(viewV3.x, viewV3.y);
       context.stroke();
+      context.fill();
     }
   },
 
