@@ -52,13 +52,20 @@ XYZWRenderer.prototype = {
     var _this = this;
     scene.traverseVisible( function ( object ) {
       if (object instanceof THREE.Mesh) {
-        var vertices = object.geometry.vertices;
-        for (var v=0, vl=vertices.length; v < vl; v++) {
-          var vertex = _this.projectVertex(vertices[v], 
-            object.matrixWorld, 
-            viewProjectionMatrix);
-          if (vertex.visible) {
-            renderList.push(vertex);
+        var faces = object.geometry.faces;
+        console.log(faces);
+        for (var f=0, fa=faces.length; f < fa; f++) {
+          var face = faces[f];
+          var v1 = object.geometry.vertices[face.a];
+          var v2 = object.geometry.vertices[face.b];
+          var v3 = object.geometry.vertices[face.c];
+
+          v1 = _this.projectVertex(v1, object.matrixWorld, viewProjectionMatrix);
+          v2 = _this.projectVertex(v2, object.matrixWorld, viewProjectionMatrix);
+          v3 = _this.projectVertex(v3, object.matrixWorld, viewProjectionMatrix);
+
+          if (v1.visible || v2.visible || v3.visible) {
+            renderList.push([v1,v2,v3]);
           }
         }
       }
@@ -68,13 +75,38 @@ XYZWRenderer.prototype = {
     var context = canvas.getContext( '2d', {} );
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (var v=0, vl=renderList.length; v < vl; v++) {
-      var vertex = renderList[v];
-      var canvas_x = (vertex.positionScreen.x / 2.0 + 0.5) * canvas.width;
-      var canvas_y = (vertex.positionScreen.y / -2.0 + 0.5) * canvas.height;
-      context.fillRect(canvas_x, canvas_y , 4, 4); 
+    var scaleToViewSpace = function(vertex) {
+      var x = (vertex.positionScreen.x / 2.0 + 0.5) * canvas.width;
+      var y = (vertex.positionScreen.y / -2.0 + 0.5) * canvas.height;
+      return {x: x, y: y};
     }
 
+    for (var v=0, vl=renderList.length; v < vl; v++) {
+      var tri = renderList[v];
+      console.log(tri);
+
+      var viewV1 = scaleToViewSpace(tri[0]);
+      var viewV2 = scaleToViewSpace(tri[1]);
+      var viewV3 = scaleToViewSpace(tri[2]);
+
+      context.beginPath();
+      context.fillStyle = "orange";
+      context.strokeStyle = "black";
+
+      context.moveTo(viewV1.x, viewV1.y);
+      context.lineTo(viewV2.x, viewV2.y);
+      context.lineTo(viewV3.x, viewV3.y);
+      context.stroke();
+    }
   },
+
+
+
+  scaleToCanvasX: function(x,canvas) {
+    return (x / 2.0 + 0.5) * canvas.width;
+  },
+  scaleToCanvasY: function(y,canvas) {
+    return (y / -2.0 + 0.5) * canvas.height;
+  }
 
 };
