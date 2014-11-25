@@ -71,6 +71,14 @@ XYZWRenderer.prototype = {
       }
     });
 
+    var faceZ = function(face) {
+      return (face[0].positionScreen.z + face[1].positionScreen.z + face[2].positionScreen.z) / 3;
+    }
+
+    renderList.sort(function(a,b) {
+      return faceZ(b) - faceZ(a);
+    });
+
     var canvas = this.domElement;
     var context = canvas.getContext( '2d', {} );
     context.clearRect(0, 0, canvas.width, canvas.height);
